@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/22 18:44:24 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/22 18:33:56 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,27 +39,9 @@ void	free_commands(t_cmd *commands)
 	// free(commands);
 }
 
-int		cmd_len(t_cmd *commands)
-{
-	int	ret;
-
-	ret = 0;
-	while(commands)
-	{
-		ret++;
-		commands = commands->next;
-	}
-	return (ret);
-}
-
 void	execute_command_list(t_cmd *commands)
 {
-	int	cmd_list_len;
-
-	cmd_list_len = cmd_len(commands);
-	cmd_list_len = cmd_list_len; //placeholder
-	//fork and dup here ----------------
-	return ;
+	int	*fd_array;
 }
 
 void	manage_command()

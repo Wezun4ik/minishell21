@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/22 18:44:24 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/22 18:43:51 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ void	execute_command_list(t_cmd *commands)
 	int	cmd_list_len;
 
 	cmd_list_len = cmd_len(commands);
-	cmd_list_len = cmd_list_len; //placeholder
 	//fork and dup here ----------------
 	return ;
 }

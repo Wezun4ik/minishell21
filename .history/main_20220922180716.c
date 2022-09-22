@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/22 18:44:24 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/22 18:07:16 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ t_cmd	first_arg = {0, 0, "/bin/ls", args_one, NULL, NULL};
 
 t_cmd	*parse(char *line)
 {
-	line = line;
+	line = NULL;
 	return (&first_arg);
 }
 
@@ -31,49 +31,14 @@ void	handle_signals(int signo)
 	rl_redisplay();
 }
 
-//placeholder
-//to write actual version later
-void	free_commands(t_cmd *commands)
-{
-	commands = commands;
-	// free(commands);
-}
-
-int		cmd_len(t_cmd *commands)
-{
-	int	ret;
-
-	ret = 0;
-	while(commands)
-	{
-		ret++;
-		commands = commands->next;
-	}
-	return (ret);
-}
-
-void	execute_command_list(t_cmd *commands)
-{
-	int	cmd_list_len;
-
-	cmd_list_len = cmd_len(commands);
-	cmd_list_len = cmd_list_len; //placeholder
-	//fork and dup here ----------------
-	return ;
-}
-
 void	manage_command()
 {
 	// char *name = ttyname(1);
-	char	*command_line;
-	t_cmd	*commands;
+	char *command_line;
 
 	command_line = readline(getenv("USER")); //USER should be in global context
-	commands = parse(command_line);
-	execute_command_list(commands);
+	parse(command_line);
 	printf( "%s\n", command_line);
-	free(command_line);
-	free_commands(commands);
 }
 
 int	main(int argc, char **argv, char **env)
