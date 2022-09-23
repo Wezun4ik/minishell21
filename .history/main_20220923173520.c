@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/23 17:41:35 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/23 17:35:20 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,9 +60,7 @@ void	fork_and_dup(int cmd_list_len)
 	int	(*pipes_list)[2];
 	int	count;
 
-	if (cmd_list_len == 1) //no pipe needed; special case
-		return ; //placeholder
-	pipes_list = malloc(sizeof(int[2]) * (cmd_list_len - 1));
+	pipes_list = malloc(sizeof(int[2]) * cmd_list_len);
 	count = 0;
 	if (pipes_list == NULL)
 		exit(1);
