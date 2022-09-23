@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 20:07:54 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/23 14:54:25 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/23 14:54:11 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,7 +45,7 @@ typedef struct		s_cmd
 
 typedef struct		s_minishell
 {
-	char			*command_line;		//прочитанная строка
+	char			*command_line;
 	char			*pwd;				//директория
 	t_cmd			*commands;			//список команд
 	pid_t			*processes_pids;	//набор pid_t запущенных процессов; тип скорее всего изменится

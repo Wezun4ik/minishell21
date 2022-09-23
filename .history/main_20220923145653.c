@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/23 16:17:08 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/23 14:56:53 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,9 @@ void	handle_signals(int signo)
 
 //placeholder
 //to write actual version later
-void	free_everything()
+void	free_commands(t_cmd *commands)
 {
-	free(minishell.command_line);
-	minishell.command_line = NULL;
+	commands = commands;
 	// free(commands);
 }
 
@@ -61,7 +60,7 @@ void	execute_command_list(t_cmd *commands)
 
 	cmd_list_len = cmd_len(commands);
 	printf("%d\n", cmd_list_len);
-	//fork and dup here --------------
+	//fork and dup here ----------------
 	return ;
 }
 

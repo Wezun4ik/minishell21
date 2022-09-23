@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/23 16:17:08 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/23 14:55:29 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,10 +35,9 @@ void	handle_signals(int signo)
 
 //placeholder
 //to write actual version later
-void	free_everything()
+void	free_commands(t_cmd *commands)
 {
-	free(minishell.command_line);
-	minishell.command_line = NULL;
+	commands = commands;
 	// free(commands);
 }
 
@@ -61,19 +60,21 @@ void	execute_command_list(t_cmd *commands)
 
 	cmd_list_len = cmd_len(commands);
 	printf("%d\n", cmd_list_len);
-	//fork and dup here --------------
+	//fork and dup here ----------------
 	return ;
 }
 
 void	manage_command()
 {
 	// char *name = ttyname(1);
+		t_cmd	*commands;
 
-	minishell.command_line = readline(getenv("USER")); //USER should be in global context
-	minishell.commands = parse(minishell.command_line);
-	execute_command_list(minishell.commands);
-	printf( "%s\n", minishell.command_line);
-	free_everything();
+	command_line = readline(getenv("USER")); //USER should be in global context
+	commands = parse(command_line);
+	execute_command_list(commands);
+	printf( "%s\n", command_line);
+	free(command_line);
+	free_commands(commands);
 }
 
 int	main(int argc, char **argv, char **env)
