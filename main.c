@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/24 17:29:26 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/24 17:41:54 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,8 @@ int		cmd_len(t_cmd *commands)
 
 void	exec_pipe(int len, t_pipe *pipes)
 {
-
+	len = len;
+	pipes = pipes;
 }
 
 void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
