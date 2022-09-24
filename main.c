@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/23 17:41:35 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/24 17:29:26 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
 
-t_cmd	first_arg = {0, 0, "/bin/ls", args_one, NULL, NULL};
+t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
 
 t_minishell	minishell = {NULL, NULL, NULL, NULL};
 
@@ -55,18 +55,52 @@ int		cmd_len(t_cmd *commands)
 	return (ret);
 }
 
-void	fork_and_dup(int cmd_list_len)
+void	exec_pipe(int len, t_pipe *pipes)
 {
-	int	(*pipes_list)[2];
+
+}
+
+void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
+{
 	int	count;
 
-	if (cmd_list_len == 1) //no pipe needed; special case
-		return ; //placeholder
-	pipes_list = malloc(sizeof(int[2]) * (cmd_list_len - 1));
 	count = 0;
+	if (pipes == trivial)
+		return ;
+	while (count < cmd_list_len)
+	{
+		if (!pipe((int *)&(pipes[count])))
+		{
+			perror("pipe");
+			exit(1);
+		}
+		count++;
+	}
+}
+
+void	fork_and_dup(int cmd_list_len)
+{
+	t_pipe	*pipes_list;
+	t_pipe	trivial_pipe;
+	int	count;
+
+	count = 0;
+	if (cmd_list_len == 1)
+	{
+		trivial_pipe[0] = 0;
+		trivial_pipe[1] = 1;
+		pipes_list = &trivial_pipe;
+	}
+	else
+		pipes_list = malloc(sizeof(t_pipe) * (cmd_list_len - 1));
 	if (pipes_list == NULL)
 		exit(1);
-
+	init_pipes(pipes_list, &trivial_pipe, cmd_list_len);
+	while (count < cmd_list_len)
+	{
+		exec_pipe(cmd_list_len, pipes_list);
+		count++;
+	}
 }
 
 void	execute_command_list(t_cmd *commands)

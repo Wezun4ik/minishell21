@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 20:07:54 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/23 17:17:55 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/24 16:48:38 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,5 +53,6 @@ typedef struct		s_minishell
 	pid_t			*processes_pids;	//набор pid_t запущенных процессов; тип скорее всего изменится
 }					t_minishell;
 
+typedef int t_pipe[2];
 
 #endif
