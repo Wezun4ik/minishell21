@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/27 17:28:30 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/27 17:26:59 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,19 +98,6 @@ void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
 			perror("pipe");
 			exit(1);
 		}
-		count++;
-	}
-}
-
-void	close_pipes(t_pipe *pipes_list, int len)
-{
-	int	count;
-
-	count = 0;
-	while (count < len)
-	{
-		close(pipes_list[len][0]);
-		close(pipes_list[len][1]);
 		count++;
 	}
 }

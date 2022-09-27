@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/27 17:28:30 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/27 17:26:40 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
 
 t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
 
-t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
+t_minishell	minishell = {NULL, NULL, NULL, NULL};
 
 t_cmd	*parse(char *line)
 {
@@ -98,19 +98,6 @@ void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
 			perror("pipe");
 			exit(1);
 		}
-		count++;
-	}
-}
-
-void	close_pipes(t_pipe *pipes_list, int len)
-{
-	int	count;
-
-	count = 0;
-	while (count < len)
-	{
-		close(pipes_list[len][0]);
-		close(pipes_list[len][1]);
 		count++;
 	}
 }

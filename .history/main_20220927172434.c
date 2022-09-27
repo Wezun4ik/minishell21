@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/27 17:28:30 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/27 17:24:34 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@ char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
 
 t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
 
-t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
+t_minishell	minishell = {NULL, NULL, NULL, NULL};
 
 t_cmd	*parse(char *line)
 {
@@ -102,25 +102,11 @@ void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
 	}
 }
 
-void	close_pipes(t_pipe *pipes_list, int len)
-{
-	int	count;
-
-	count = 0;
-	while (count < len)
-	{
-		close(pipes_list[len][0]);
-		close(pipes_list[len][1]);
-		count++;
-	}
-}
-
 void	fork_and_dup(int cmd_list_len)
 {
 	t_pipe	*pipes_list;
 	t_pipe	trivial_pipe;
 	int	count;
-	int	status;
 
 	count = 0;
 	if (cmd_list_len == 1)
@@ -140,9 +126,6 @@ void	fork_and_dup(int cmd_list_len)
 		count++;
 	}
 	close_pipes(pipes_list, cmd_list_len - 1);
-	while ((count = wait(&status)) != -1)
-		fprintf(stderr, "process %d exits with %d\n", count, WEXITSTATUS(status));
-	return ;
 }
 
 void	execute_command_list(t_cmd *commands)

@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/27 17:28:30 by ilya             ###   ########.fr       */
+/*   Updated: 2022/09/27 17:28:28 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,7 +110,7 @@ void	close_pipes(t_pipe *pipes_list, int len)
 	while (count < len)
 	{
 		close(pipes_list[len][0]);
-		close(pipes_list[len][1]);
+		close(pipes_list[len][0]);
 		count++;
 	}
 }
