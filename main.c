@@ -6,15 +6,17 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/09/27 17:28:30 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/02 17:31:29 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
+char	*args_two[] = {"/usr/bin/tr", "a-z", "A-Z", NULL};
 
 t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
+t_cmd	second_arg = {0, 0, "/usr/bin/tr", args_two, 0, 1, NULL, &first_arg};
 
 t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
 
@@ -55,13 +57,14 @@ int		cmd_len(t_cmd *commands)
 	return (ret);
 }
 
-void	exec_pipe(int len, t_pipe *pipes, int pipe_pos)
+void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 {
 	int	pid;
 
 	pid = fork();
 	if (pid == 0)
 	{
+		printf("child\n");
 		if (pipe_pos != 0)
 		{
 			dup2(pipes[pipe_pos - 1][0], 0);
@@ -72,8 +75,9 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos)
 			dup2(pipes[pipe_pos][1], 1);
 			close(pipes[pipe_pos][0]);
 		}
-		execve(minishell.commands[pipe_pos].str_cmd, minishell.commands[pipe_pos].args, minishell.env);
-		perror(minishell.commands[pipe_pos].str_cmd);
+		execve(command->str_cmd, command->args, minishell.env);
+		perror(command->str_cmd);
+		exit(1);
 	}
 	else if (pid == -1)
 	{
@@ -93,7 +97,7 @@ void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
 		return ;
 	while (count < cmd_list_len)
 	{
-		if (!pipe((int *)&(pipes[count])))
+		if (pipe((int *)&(pipes[count])))
 		{
 			perror("pipe");
 			exit(1);
@@ -119,6 +123,7 @@ void	fork_and_dup(int cmd_list_len)
 {
 	t_pipe	*pipes_list;
 	t_pipe	trivial_pipe;
+	t_cmd	*command;
 	int	count;
 	int	status;
 
@@ -134,9 +139,11 @@ void	fork_and_dup(int cmd_list_len)
 	if (pipes_list == NULL)
 		exit(1);
 	init_pipes(pipes_list, &trivial_pipe, cmd_list_len - 1);
+	command = minishell.commands;
 	while (count < cmd_list_len)
 	{
-		exec_pipe(cmd_list_len, pipes_list, count);
+		exec_pipe(cmd_list_len, pipes_list, count, command);
+		command = command->next;
 		count++;
 	}
 	close_pipes(pipes_list, cmd_list_len - 1);
@@ -173,6 +180,7 @@ int	main(int argc, char **argv, char **environment)
 	(void)argc;
 	(void)argv;
 	minishell.env = environment;
+	first_arg.next = &second_arg; //delete
 	signal(SIGINT, handle_signals);
 	while (1)
 		manage_command();
