@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/02 17:31:29 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/07 04:17:15 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -147,8 +147,13 @@ void	fork_and_dup(int cmd_list_len)
 		count++;
 	}
 	close_pipes(pipes_list, cmd_list_len - 1);
-	while ((count = wait(&status)) != -1)
+	count = 0;
+	while (count < cmd_list_len)
+	{
+		wait(&status);
 		fprintf(stderr, "process %d exits with %d\n", count, WEXITSTATUS(status));
+		count++;
+	}
 	return ;
 }
 
