@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/07 04:17:15 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/14 17:41:07 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,11 @@
 
 char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
 char	*args_two[] = {"/usr/bin/tr", "a-z", "A-Z", NULL};
+char	*args_three[] = {"/bin/cat", NULL};
 
 t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
 t_cmd	second_arg = {0, 0, "/usr/bin/tr", args_two, 0, 1, NULL, &first_arg};
+t_cmd	third_arg = {0, 0, "/bin/cat", args_three, 0, 1, NULL, &second_arg};
 
 t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
 
@@ -64,7 +66,6 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 	pid = fork();
 	if (pid == 0)
 	{
-		printf("child\n");
 		if (pipe_pos != 0)
 		{
 			dup2(pipes[pipe_pos - 1][0], 0);
@@ -85,7 +86,10 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 		exit(1);
 	}
 	else
+	{
+		printf("command %s with %d pid\n", command->str_cmd, pid);
 		return ;
+	}
 }
 
 void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
@@ -113,10 +117,11 @@ void	close_pipes(t_pipe *pipes_list, int len)
 	count = 0;
 	while (count < len)
 	{
-		close(pipes_list[len][0]);
-		close(pipes_list[len][1]);
+		close(pipes_list[count][0]);
+		close(pipes_list[count][1]);
 		count++;
 	}
+	free(pipes_list);
 }
 
 void	fork_and_dup(int cmd_list_len)
@@ -126,6 +131,7 @@ void	fork_and_dup(int cmd_list_len)
 	t_cmd	*command;
 	int	count;
 	int	status;
+	int	pid;
 
 	count = 0;
 	if (cmd_list_len == 1)
@@ -150,8 +156,8 @@ void	fork_and_dup(int cmd_list_len)
 	count = 0;
 	while (count < cmd_list_len)
 	{
-		wait(&status);
-		fprintf(stderr, "process %d exits with %d\n", count, WEXITSTATUS(status));
+		pid = wait(&status);
+		printf("process %d exits with %d\n", pid, WEXITSTATUS(status));
 		count++;
 	}
 	return ;
@@ -186,6 +192,7 @@ int	main(int argc, char **argv, char **environment)
 	(void)argv;
 	minishell.env = environment;
 	first_arg.next = &second_arg; //delete
+	// second_arg.next = &third_arg; //delete
 	signal(SIGINT, handle_signals);
 	while (1)
 		manage_command();
