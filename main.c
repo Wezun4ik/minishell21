@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/14 17:41:07 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/18 03:18:48 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,32 @@ int		cmd_len(t_cmd *commands)
 	return (ret);
 }
 
+void	commute_pipes(int len, t_pipe *pipes, int pipe_pos)
+{
+	int	cls_pipes;
+
+	cls_pipes = 0;
+	if (pipe_pos != 0)
+	{
+		dup2(pipes[pipe_pos - 1][0], 0);
+		close(pipes[pipe_pos - 1][1]);
+	}
+	if (pipe_pos != len - 1)
+	{
+		dup2(pipes[pipe_pos][1], 1);
+		close(pipes[pipe_pos][0]);
+	}
+	while (cls_pipes < len)
+	{
+		if (cls_pipes != pipe_pos && cls_pipes != pipe_pos - 1)
+		{
+			close(pipes[cls_pipes][0]);
+			close(pipes[cls_pipes][1]);
+		}
+		cls_pipes++;
+	}
+}
+
 void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 {
 	int	pid;
@@ -66,16 +92,7 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 	pid = fork();
 	if (pid == 0)
 	{
-		if (pipe_pos != 0)
-		{
-			dup2(pipes[pipe_pos - 1][0], 0);
-			close(pipes[pipe_pos - 1][1]);
-		}
-		if (pipe_pos != len - 1)
-		{
-			dup2(pipes[pipe_pos][1], 1);
-			close(pipes[pipe_pos][0]);
-		}
+		commute_pipes(len, pipes, pipe_pos);
 		execve(command->str_cmd, command->args, minishell.env);
 		perror(command->str_cmd);
 		exit(1);
@@ -182,7 +199,6 @@ void	manage_command()
 	minishell.command_line = readline(getenv("USER")); //USER should be in global context
 	minishell.commands = parse(minishell.command_line);
 	execute_command_list(minishell.commands);
-	printf( "%s\n", minishell.command_line);
 	free_everything();
 }
 
@@ -192,7 +208,7 @@ int	main(int argc, char **argv, char **environment)
 	(void)argv;
 	minishell.env = environment;
 	first_arg.next = &second_arg; //delete
-	// second_arg.next = &third_arg; //delete
+	second_arg.next = &third_arg; //delete
 	signal(SIGINT, handle_signals);
 	while (1)
 		manage_command();
