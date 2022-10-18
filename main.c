@@ -6,27 +6,27 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/18 03:18:48 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/18 17:14:01 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
-char	*args_two[] = {"/usr/bin/tr", "a-z", "A-Z", NULL};
-char	*args_three[] = {"/bin/cat", NULL};
+// char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
+// char	*args_two[] = {"/usr/bin/tr", "a-z", "A-Z", NULL};
+// char	*args_three[] = {"/bin/cat", NULL};
 
-t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
-t_cmd	second_arg = {0, 0, "/usr/bin/tr", args_two, 0, 1, NULL, &first_arg};
-t_cmd	third_arg = {0, 0, "/bin/cat", args_three, 0, 1, NULL, &second_arg};
+// t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
+// t_cmd	second_arg = {0, 0, "/usr/bin/tr", args_two, 0, 1, NULL, &first_arg};
+// t_cmd	third_arg = {0, 0, "/bin/cat", args_three, 0, 1, NULL, &second_arg};
 
 t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
 
-t_cmd	*parse(char *line)
-{
-	line = line;
-	return (&first_arg);
-}
+// t_cmd	*parse(char *line)
+// {
+// 	line = line;
+// 	return (&first_arg);
+// }
 
 void	handle_signals(int signo)
 {
@@ -93,8 +93,8 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 	if (pid == 0)
 	{
 		commute_pipes(len, pipes, pipe_pos);
-		execve(command->str_cmd, command->args, minishell.env);
-		perror(command->str_cmd);
+		execve(command->cmd, command->args, minishell.env);
+		perror(command->cmd);
 		exit(1);
 	}
 	else if (pid == -1)
@@ -104,7 +104,7 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 	}
 	else
 	{
-		printf("command %s with %d pid\n", command->str_cmd, pid);
+		// printf("command %s with %d pid\n", command->cmd, pid);
 		return ;
 	}
 }
@@ -127,11 +127,13 @@ void	init_pipes(t_pipe *pipes, t_pipe *trivial, int cmd_list_len)
 	}
 }
 
-void	close_pipes(t_pipe *pipes_list, int len)
+void	close_pipes(t_pipe *pipes_list, int len, t_pipe *trivial_pipe)
 {
 	int	count;
 
 	count = 0;
+	if (pipes_list == trivial_pipe)
+		return ;
 	while (count < len)
 	{
 		close(pipes_list[count][0]);
@@ -169,12 +171,13 @@ void	fork_and_dup(int cmd_list_len)
 		command = command->next;
 		count++;
 	}
-	close_pipes(pipes_list, cmd_list_len - 1);
+	close_pipes(pipes_list, cmd_list_len - 1, &trivial_pipe);
 	count = 0;
 	while (count < cmd_list_len)
 	{
 		pid = wait(&status);
-		printf("process %d exits with %d\n", pid, WEXITSTATUS(status));
+		// printf("process %d exits with %d\n", pid, WEXITSTATUS(status));
+		(void)pid;
 		count++;
 	}
 	return ;
@@ -185,11 +188,35 @@ void	execute_command_list(t_cmd *commands)
 	int	cmd_list_len;
 
 	cmd_list_len = cmd_len(commands);
-	printf("%d\n", cmd_list_len);
+	// printf("%d\n", cmd_list_len);
 	if (cmd_list_len > 0)
 		fork_and_dup(cmd_list_len);
 	//fork and dup here --------------
 	return ;
+}
+
+void	print_args(char **args)
+{
+	int	count;
+
+	count = 0;
+	while (args[count])
+	{
+		printf("%s\n", args[count]);
+		count++;
+	}
+	if (args[count] == NULL)
+		printf("ok\n");
+}
+
+void	print_commands(t_cmd *list)
+{
+	while (list)
+	{
+		printf("%s\n", list->cmd);
+		print_args(list->args);
+		list = list->next;
+	}
 }
 
 void	manage_command()
@@ -197,7 +224,8 @@ void	manage_command()
 	// char *name = ttyname(1);
 
 	minishell.command_line = readline(getenv("USER")); //USER should be in global context
-	minishell.commands = parse(minishell.command_line);
+	minishell.commands = string_run(minishell.command_line, minishell.env);
+	// print_commands(minishell.commands);
 	execute_command_list(minishell.commands);
 	free_everything();
 }
@@ -207,8 +235,6 @@ int	main(int argc, char **argv, char **environment)
 	(void)argc;
 	(void)argv;
 	minishell.env = environment;
-	first_arg.next = &second_arg; //delete
-	second_arg.next = &third_arg; //delete
 	signal(SIGINT, handle_signals);
 	while (1)
 		manage_command();
