@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/18 17:14:01 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/18 19:58:48 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,22 +65,15 @@ void	commute_pipes(int len, t_pipe *pipes, int pipe_pos)
 
 	cls_pipes = 0;
 	if (pipe_pos != 0)
-	{
 		dup2(pipes[pipe_pos - 1][0], 0);
-		close(pipes[pipe_pos - 1][1]);
-	}
 	if (pipe_pos != len - 1)
-	{
 		dup2(pipes[pipe_pos][1], 1);
-		close(pipes[pipe_pos][0]);
-	}
-	while (cls_pipes < len)
+	while (cls_pipes < len - 1)
 	{
-		if (cls_pipes != pipe_pos && cls_pipes != pipe_pos - 1)
-		{
+		if (cls_pipes != pipe_pos - 1)
 			close(pipes[cls_pipes][0]);
+		if (cls_pipes != pipe_pos)
 			close(pipes[cls_pipes][1]);
-		}
 		cls_pipes++;
 	}
 }
