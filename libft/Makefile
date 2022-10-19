@@ -6,7 +6,7 @@
 #    By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/28 18:42:35 by sbrella           #+#    #+#              #
-#    Updated: 2022/06/30 22:38:42 by ilya             ###   ########.fr        #
+#    Updated: 2022/10/18 21:59:45 by ilya             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -46,7 +46,8 @@ ft_strrstr.c \
 ft_strtrim.c \
 ft_substr.c \
 ft_tolower.c \
-ft_toupper.c
+ft_toupper.c \
+ft_strcpy.c
 
 OUT = ft_atoi.o \
 ft_bzero.o \
@@ -82,7 +83,8 @@ ft_strrstr.o \
 ft_strtrim.o \
 ft_substr.o \
 ft_tolower.o \
-ft_toupper.o
+ft_toupper.o \
+ft_strcpy.o
 
 BONUS_FILES = ft_lstadd_front_bonus.c \
 ft_lstadd_back_bonus.c \

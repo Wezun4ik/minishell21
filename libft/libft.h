@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   libft.h                                            :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: sbrella <sbrella@student.42.fr>            +#+  +:+       +#+        */
+/*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2018/11/24 17:08:54 by sbrella           #+#    #+#             */
-/*   Updated: 2021/12/02 19:20:31 by sbrella          ###   ########.fr       */
+/*   Updated: 2022/10/18 21:58:20 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,4 +69,6 @@ void				ft_lstadd_back(t_list **lst, t_list *new);
 size_t				ft_strlcpy(char *dst, const char *src, \
 					size_t dstsize);
 char				*ft_strdup(const char *s1);
+void				ft_strcpy(char *dst, char *src, int cnt);
+
 #endif

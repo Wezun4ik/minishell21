@@ -6,27 +6,13 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/18 19:58:48 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/19 04:06:52 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
-// char	*args_one[] = {"/bin/ls", "-al", "/", NULL};
-// char	*args_two[] = {"/usr/bin/tr", "a-z", "A-Z", NULL};
-// char	*args_three[] = {"/bin/cat", NULL};
-
-// t_cmd	first_arg = {0, 0, "/bin/ls", args_one, 0, 1, NULL, NULL};
-// t_cmd	second_arg = {0, 0, "/usr/bin/tr", args_two, 0, 1, NULL, &first_arg};
-// t_cmd	third_arg = {0, 0, "/bin/cat", args_three, 0, 1, NULL, &second_arg};
-
 t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
-
-// t_cmd	*parse(char *line)
-// {
-// 	line = line;
-// 	return (&first_arg);
-// }
 
 void	handle_signals(int signo)
 {
@@ -176,12 +162,38 @@ void	fork_and_dup(int cmd_list_len)
 	return ;
 }
 
+// void	define_path(t_cmd *command, char **paths)
+// {
+
+// }
+
+// void	expand_commands(t_cmd *commands)
+// {
+// 	char	**paths;
+// 	char	**path_double;
+
+// 	paths = ft_split(getenv("PATH"), ':');
+// 	while (commands)
+// 	{
+// 		define_path(commands, paths);
+// 		commands = commands->next;
+// 	}
+// 	path_double = paths;
+// 	while (*paths)
+// 	{
+// 		free(*paths);
+// 		paths++;
+// 	}
+// 	free(path_double);
+// 	return ;
+// }
+
 void	execute_command_list(t_cmd *commands)
 {
 	int	cmd_list_len;
 
+	// expand_commands(commands);
 	cmd_list_len = cmd_len(commands);
-	// printf("%d\n", cmd_list_len);
 	if (cmd_list_len > 0)
 		fork_and_dup(cmd_list_len);
 	//fork and dup here --------------
@@ -212,11 +224,27 @@ void	print_commands(t_cmd *list)
 	}
 }
 
+char	*output_prompt()
+{
+	static char	*prompt = NULL;
+	char	*tmp;
+	char	*sec_tmp;
+
+	if (prompt != NULL)
+		free(prompt);
+	tmp = ft_strjoin(getenv("USER"), ":");
+	sec_tmp = ft_strjoin(tmp, getenv("PWD"));
+	free(tmp);
+	prompt = ft_strjoin(sec_tmp, "$ ");
+	free(sec_tmp);
+	return (prompt);
+}
+
 void	manage_command()
 {
 	// char *name = ttyname(1);
 
-	minishell.command_line = readline(getenv("USER")); //USER should be in global context
+	minishell.command_line = readline(output_prompt()); //USER should be in global context
 	minishell.commands = string_run(minishell.command_line, minishell.env);
 	// print_commands(minishell.commands);
 	execute_command_list(minishell.commands);
