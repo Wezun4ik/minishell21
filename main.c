@@ -6,13 +6,35 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/20 04:57:48 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/20 20:59:51 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
+
+char	*my_getenv(char **env, char *key)
+{
+	char	*key_copy;
+	char	*loc;
+	int		count;
+
+	key_copy = ft_strjoin(key, "=");
+	count = 0;
+	while (env[count])
+	{
+		loc = ft_strnstr(env[count], key_copy, ft_strlen(key_copy) + 1);
+		if (loc)
+		{
+			free(key_copy);
+			return (ft_strchr(env[count], '=') + 1);
+		}
+		count++;
+	}
+	free(key_copy);
+	return (NULL);
+}
 
 void	handle_signals(int signo)
 {
@@ -301,8 +323,8 @@ char	*output_prompt()
 
 	if (prompt != NULL)
 		free(prompt);
-	tmp = ft_strjoin(getenv("USER"), ":");
-	sec_tmp = ft_strjoin(tmp, getenv("PWD"));
+	tmp = ft_strjoin(my_getenv(minishell.env, "USER"), ":");
+	sec_tmp = ft_strjoin(tmp, my_getenv(minishell.env, "PWD"));
 	free(tmp);
 	prompt = ft_strjoin(sec_tmp, "$ ");
 	free(sec_tmp);
