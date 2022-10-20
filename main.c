@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/20 20:59:51 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/21 02:56:59 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,8 @@ char	*my_getenv(char **env, char *key)
 
 	key_copy = ft_strjoin(key, "=");
 	count = 0;
+	if (env == NULL || key == NULL)
+		return (NULL);
 	while (env[count])
 	{
 		loc = ft_strnstr(env[count], key_copy, ft_strlen(key_copy) + 1);
@@ -132,6 +134,94 @@ int	built_in_echo(t_cmd *command)
 	return (0);
 }
 
+int	valid_arg(char *arg)
+{
+	while (*arg)
+	{
+		if (!ft_isalnum(*arg) && *arg != '_')
+			return (0);
+		arg++;
+	}
+	return (1);
+}
+
+char	*my_special_getenv(char **env, char *key)
+{
+	char	*key_copy;
+	char	*loc;
+	int		count;
+
+	key_copy = ft_strjoin(key, "=");
+	count = 0;
+	while (env[count])
+	{
+		loc = ft_strnstr(env[count], key_copy, ft_strlen(key_copy) + 1);
+		if (loc)
+		{
+			free(key_copy);
+			return (env[count]);
+		}
+		count++;
+	}
+	free(key_copy);
+	return (NULL);
+}
+
+int	unset_one(char ***prev_env, char *env_var)
+{
+	int	count;
+	char	**new_env;
+	char	*to_unset;
+	int		sec_count;
+
+	count = 0;
+	sec_count = 0;
+	to_unset = my_special_getenv(*prev_env, env_var);
+	while ((*prev_env)[count])
+		count++;
+	if (!to_unset || count == 0)
+		return (0);
+	new_env = malloc(sizeof(char *) * (count));
+	new_env[count - 1] = NULL;
+	if (!new_env)
+	{
+		perror("malloc unset_one");
+		exit (1);
+	}
+	count = 0;
+	while ((*prev_env)[count])
+	{
+		if ((*prev_env)[count] != to_unset)
+		{
+			new_env[sec_count] = (*prev_env)[count];
+			sec_count++;
+		}
+		else
+			free((*prev_env)[count]);
+		count++;
+	}
+	count = 0;
+	free(*prev_env);
+	*prev_env = new_env;
+	return (0);
+}
+
+int	built_in_unset(char ***prev_env, t_cmd *command)
+{
+	int	count;
+
+	count = 1;
+	while (command->args[count])
+	{
+		if (valid_arg(command->args[count]))
+			unset_one(prev_env, command->args[count]);
+		else
+			perror("unset");
+		count++;
+	}
+	return (0);
+}
+
 int	real_execution(t_cmd *command)
 {
 	if (command->type == e_simple_command)
@@ -143,7 +233,7 @@ int	real_execution(t_cmd *command)
 	else if (command->type == e_pwd)
 		return(0);
 	else if (command->type == e_unset)
-		return(0);
+		return(built_in_unset(&minishell.env, command));
 	else if (command->type == e_export)
 		return(0);
 	else if (command->type == e_env)
@@ -328,6 +418,8 @@ char	*output_prompt()
 	free(tmp);
 	prompt = ft_strjoin(sec_tmp, "$ ");
 	free(sec_tmp);
+	if (prompt == NULL)
+		return ("$");
 	return (prompt);
 }
 
@@ -360,6 +452,7 @@ void	manage_command()
 	// char *name = ttyname(1);
 
 	minishell.command_line = readline(output_prompt()); //USER should be in global context
+	add_history(minishell.command_line);
 	minishell.commands = string_run(minishell.command_line, minishell.env);
 	set_labels(minishell.commands);
 	execute_command_list(minishell.commands);

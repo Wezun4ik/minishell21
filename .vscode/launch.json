@@ -12,7 +12,7 @@
 			"args": [],
 			"stopAtEntry": true,
 			"cwd": "${fileDirname}",
-			"environment": [],
+			"environment": [{ "name": "config", "value": "Debug" }],
 			"externalConsole": false,
 			"MIMode": "gdb",
 			"setupCommands": [
