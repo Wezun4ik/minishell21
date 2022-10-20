@@ -6,7 +6,7 @@
 #    By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/28 18:42:35 by sbrella           #+#    #+#              #
-#    Updated: 2022/10/18 21:56:58 by ilya             ###   ########.fr        #
+#    Updated: 2022/10/20 21:07:19 by ilya             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -74,7 +74,8 @@ f_readers2.c \
 f_syntax_checker.c \
 f_token_to_cmd_utils.c \
 t_cmd.c \
-t_token.c
+t_token.c \
+t_red.c
 # f_utils.c \
 # f_utils2.c
 
