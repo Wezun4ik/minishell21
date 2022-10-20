@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 20:07:54 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/18 04:16:19 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/19 21:03:40 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,13 +26,6 @@
 # include <fcntl.h>
 # include <readline/readline.h>
 # include <readline/history.h>
-
-enum e_type
-{
-	simple_command,
-	built_in_command
-};
-
 
 //*********resolve conflict, then delete**************
 /* структура из результатов парсинга. из них нужно будет сделать склейку с переменными окружения для запуска в execve() */
@@ -58,5 +51,7 @@ typedef struct		s_minishell
 }					t_minishell;
 
 typedef int t_pipe[2];
+
+void	expand_command(t_cmd *command);
 
 #endif

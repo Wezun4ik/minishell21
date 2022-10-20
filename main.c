@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/19 04:06:52 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/20 04:57:48 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,15 @@ void	handle_signals(int signo)
 //to write actual version later
 void	free_everything()
 {
+	t_cmd	*dbl_commands;
+
 	free(minishell.command_line);
 	minishell.command_line = NULL;
-	// free(commands);
+	dbl_commands = minishell.commands;
+	while (dbl_commands)
+	{
+		dbl_commands = dbl_commands->next;
+	}
 }
 
 int		cmd_len(t_cmd *commands)
@@ -64,6 +70,68 @@ void	commute_pipes(int len, t_pipe *pipes, int pipe_pos)
 	}
 }
 
+int	built_in_exit()
+{
+	exit(0);
+}
+
+int	built_in_env()
+{
+	int	count;
+
+	count = 0;
+	while (minishell.env[count])
+	{
+		printf("%s\n", minishell.env[count]);
+		count++;
+	}
+	return (0);
+}
+
+int	built_in_echo(t_cmd *command)
+{
+	int		count;
+	int		new_line;
+
+	count = 1;
+	new_line = 1;
+	while (command->args[count])
+	{
+		if (count != 1 && !(count == 2 && new_line == 0))
+			printf(" ");
+		if (count == 1 && !ft_strncmp(command->args[count], "-n", 3))
+			new_line = 0;
+		else
+			printf("%s", command->args[count]);
+		count++;
+	}
+	if (new_line)
+		printf("\n");
+	return (0);
+}
+
+int	real_execution(t_cmd *command)
+{
+	if (command->type == e_simple_command)
+		return(execve(command->cmd, command->args, minishell.env));
+	else if (command->type == e_echo)
+		return(built_in_echo(command));
+	else if (command->type == e_cd)
+		return(0);
+	else if (command->type == e_pwd)
+		return(0);
+	else if (command->type == e_unset)
+		return(0);
+	else if (command->type == e_export)
+		return(0);
+	else if (command->type == e_env)
+		return(built_in_env());
+	else if (command->type == e_exit)
+		return(built_in_exit());
+	else
+		return (-1);
+}
+
 void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 {
 	int	pid;
@@ -72,8 +140,9 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 	if (pid == 0)
 	{
 		commute_pipes(len, pipes, pipe_pos);
-		execve(command->cmd, command->args, minishell.env);
-		perror(command->cmd);
+		// expand_command(command);
+		if (real_execution(command))
+			perror(command->cmd);
 		exit(1);
 	}
 	else if (pid == -1)
@@ -134,6 +203,11 @@ void	fork_and_dup(int cmd_list_len)
 	count = 0;
 	if (cmd_list_len == 1)
 	{
+		if (minishell.commands->type != e_simple_command && minishell.commands->type != e_echo)
+		{
+			real_execution(minishell.commands);
+			return ;
+		}
 		trivial_pipe[0] = 0;
 		trivial_pipe[1] = 1;
 		pipes_list = &trivial_pipe;
@@ -167,17 +241,13 @@ void	fork_and_dup(int cmd_list_len)
 
 // }
 
-// void	expand_commands(t_cmd *commands)
+// void	expand_command(t_cmd *command)
 // {
 // 	char	**paths;
 // 	char	**path_double;
 
 // 	paths = ft_split(getenv("PATH"), ':');
-// 	while (commands)
-// 	{
-// 		define_path(commands, paths);
-// 		commands = commands->next;
-// 	}
+// 	define_path(command, paths);
 // 	path_double = paths;
 // 	while (*paths)
 // 	{
@@ -192,7 +262,6 @@ void	execute_command_list(t_cmd *commands)
 {
 	int	cmd_list_len;
 
-	// expand_commands(commands);
 	cmd_list_len = cmd_len(commands);
 	if (cmd_list_len > 0)
 		fork_and_dup(cmd_list_len);
@@ -240,22 +309,81 @@ char	*output_prompt()
 	return (prompt);
 }
 
+void	set_labels(t_cmd *commands)
+{
+	while (commands)
+	{
+		if (!ft_strncmp(commands->cmd, "echo", sizeof("echo") + 1))
+			commands->type = e_echo;
+		else if (!ft_strncmp(commands->cmd, "cd", sizeof ("cd") + 1))
+			commands->type = e_cd;
+		else if (!ft_strncmp(commands->cmd, "pwd", sizeof ("pwd") + 1))
+			commands->type = e_pwd;
+		else if (!ft_strncmp(commands->cmd, "unset", sizeof ("unset") + 1))
+			commands->type = e_unset;
+		else if (!ft_strncmp(commands->cmd, "export", sizeof ("export") + 1))
+			commands->type = e_export;
+		else if (!ft_strncmp(commands->cmd, "env", sizeof ("env") + 1))
+			commands->type = e_env;
+		else if (!ft_strncmp(commands->cmd, "exit", sizeof ("exit") + 1))
+			commands->type = e_exit;
+		else
+			commands->type = e_simple_command;
+		commands = commands->next;
+	}
+}
+
 void	manage_command()
 {
 	// char *name = ttyname(1);
 
 	minishell.command_line = readline(output_prompt()); //USER should be in global context
 	minishell.commands = string_run(minishell.command_line, minishell.env);
-	// print_commands(minishell.commands);
+	set_labels(minishell.commands);
 	execute_command_list(minishell.commands);
 	free_everything();
+}
+
+char	**dup_env(char **environment)
+{
+	char	**dbl;
+	int		count;
+	int		sec_count;
+
+	count = 0;
+	if (environment == NULL)
+	{
+		perror("environment");
+		exit(1);
+	}
+	while (environment[count])
+		count++;
+	dbl = malloc(sizeof(char *) * (count + 1));
+	if (dbl == NULL)
+	{
+		perror("malloc");
+		exit(1);
+	}
+	sec_count = 0;
+	while (environment[sec_count])
+	{
+		dbl[sec_count] = ft_strdup(environment[sec_count]);
+		if (!dbl[sec_count])
+		{
+			perror("ft_strdup");
+			exit(1);
+		}
+		sec_count++;
+	}
+	dbl[sec_count] = NULL;
+	return (dbl);
 }
 
 int	main(int argc, char **argv, char **environment)
 {
 	(void)argc;
 	(void)argv;
-	minishell.env = environment;
+	minishell.env = dup_env(environment);
 	signal(SIGINT, handle_signals);
 	while (1)
 		manage_command();
