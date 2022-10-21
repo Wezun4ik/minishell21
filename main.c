@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/21 02:56:59 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/21 06:01:23 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,14 +52,41 @@ void	handle_signals(int signo)
 void	free_everything()
 {
 	t_cmd	*dbl_commands;
+	t_cmd	*dbl_dbl_commands; //really stupid name
+	int		count;
+	t_red	*all_reds;
+	t_red	*all_reds_dbl;
 
 	free(minishell.command_line);
 	minishell.command_line = NULL;
 	dbl_commands = minishell.commands;
 	while (dbl_commands)
 	{
-		dbl_commands = dbl_commands->next;
+		if (dbl_commands->cmd != dbl_commands->args[0])
+			free(dbl_commands->cmd);
+		count = 0;
+		while (dbl_commands->args[count])
+		{
+			free(dbl_commands->args[count]);
+			count++;
+		}
+		free(dbl_commands->args);
+		if (dbl_commands->red)
+		{
+			all_reds = dbl_commands->red;
+			while (all_reds)
+			{
+				free(all_reds->word);
+				all_reds_dbl = all_reds->next;
+				free(all_reds);
+				all_reds = all_reds_dbl;
+			}
+		}
+		dbl_dbl_commands = dbl_commands->next;
+		free(dbl_commands);
+		dbl_commands = dbl_dbl_commands;
 	}
+
 }
 
 int		cmd_len(t_cmd *commands)
@@ -222,6 +249,139 @@ int	built_in_unset(char ***prev_env, t_cmd *command)
 	return (0);
 }
 
+int	built_in_pwd()
+{
+	char	*cwd;
+
+	cwd = getcwd(NULL, 0);
+	if (cwd == NULL)
+		return (1);
+	printf("%s\n", cwd);
+	free(cwd);
+	return (0);
+}
+
+int	valid_key_value(char *arg)
+{
+	int	count;
+	int	num_of_equals;
+
+	count = 0;
+	num_of_equals = 0;
+	while (arg[count])
+	{
+		if (arg[count] == '=')
+			num_of_equals++;
+		count++;
+	}
+	if (num_of_equals != 1)
+		return (0);
+	count = 0;
+	while (arg[count])
+	{
+		if (!(ft_isalnum(arg[count])) && arg[count] != '_' && arg[count] != '=')
+			return (0);
+		count++;
+	}
+	return (1);
+}
+
+void	export_one(char ***prev_env, char *env_var)
+{
+	char	*key;
+	char	*pos;
+	int		count;
+	char	**new_env;
+	int		sec_count;
+
+	sec_count = 0;
+	key = ft_strdup(env_var);
+	pos = ft_strchr(key, '=');
+	*pos = '\0';
+	unset_one(prev_env, key);
+	*pos = '=';
+	count = 0;
+	while ((*prev_env)[count])
+		count++;
+	new_env = malloc(sizeof(char *) * (count + 2));
+	if (new_env == NULL)
+	{
+		perror("malloc");
+		exit (1);
+	}
+	new_env[count + 1] = NULL;
+	while (sec_count < count)
+	{
+		new_env[sec_count] = (*prev_env)[sec_count];
+		sec_count++;
+	}
+	new_env[count] = key;
+	free(*prev_env);
+	*prev_env = new_env;
+}
+
+int	built_in_export(char ***prev_env, t_cmd *command)
+{
+	int	count;
+
+	count = 1;
+	while (command->args[count])
+	{
+		if (valid_key_value(command->args[count]))
+			export_one(prev_env, command->args[count]);
+		else
+			perror("export");
+		count++;
+	}
+	return (0);
+}
+
+int	built_in_cd(t_cmd *command)
+{
+	int		count;
+	char	*arg;
+	char	*dbl;
+
+	count = 1;
+	while (command->args[count])
+		count++;
+	if (count > 2)
+	{
+		perror("cd: invalid number of arguments");
+		return (1);
+	}
+	if (count == 1)
+	{
+		arg = my_getenv(minishell.env, "HOME");
+		if (!arg)
+		{
+			perror("cd: HOME is not set");
+			return (1);
+		}
+	}
+	else
+		arg = command->args[1];
+	if (chdir(arg))
+	{
+		perror("cd");
+		return (1);
+	}
+	unset_one(&minishell.env, "OLDPWD");
+	if (my_getenv(minishell.env, "PWD"))
+	{
+		arg = ft_strjoin("OLDPWD=", my_getenv(minishell.env, "PWD"));
+		export_one(&minishell.env, arg);
+		free(arg);
+	}
+	unset_one(&minishell.env, "PWD");
+	arg = getcwd(NULL, 0);
+	dbl = ft_strjoin("PWD=", arg);
+	free(arg);
+	export_one(&minishell.env, dbl);
+	free(dbl);
+	return (0);
+}
+
 int	real_execution(t_cmd *command)
 {
 	if (command->type == e_simple_command)
@@ -229,13 +389,13 @@ int	real_execution(t_cmd *command)
 	else if (command->type == e_echo)
 		return(built_in_echo(command));
 	else if (command->type == e_cd)
-		return(0);
+		return(built_in_cd(command));
 	else if (command->type == e_pwd)
-		return(0);
+		return(built_in_pwd());
 	else if (command->type == e_unset)
 		return(built_in_unset(&minishell.env, command));
 	else if (command->type == e_export)
-		return(0);
+		return(built_in_export(&minishell.env, command));
 	else if (command->type == e_env)
 		return(built_in_env());
 	else if (command->type == e_exit)
@@ -252,7 +412,7 @@ void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
 	if (pid == 0)
 	{
 		commute_pipes(len, pipes, pipe_pos);
-		// expand_command(command);
+		expand_command(command);
 		if (real_execution(command))
 			perror(command->cmd);
 		exit(1);
@@ -348,27 +508,60 @@ void	fork_and_dup(int cmd_list_len)
 	return ;
 }
 
-// void	define_path(t_cmd *command, char **paths)
-// {
+void	define_path(t_cmd *command, char **paths)
+{
+	int		count;
+	char	*buf;
+	char	*filename;
+	int		ret_code;
 
-// }
+	count = 0;
+	while (paths[count])
+	{
+		buf = ft_strjoin(paths[count], "/");
+		filename = ft_strjoin(buf, command->cmd);
+		free(buf);
+		if (filename == NULL)
+		{
+			perror("strjoin");
+			exit (1);
+		}
+		ret_code = access(filename, F_OK | X_OK);
+		if (ret_code == 0)
+		{
+			if (command->cmd != command->args[0])
+				free(command->cmd);
+			command->cmd = filename;
+			return ;
+		}
+		free(filename);
+		count++;
+	}
+	perror(command->cmd);
+	exit(1);
+}
 
-// void	expand_command(t_cmd *command)
-// {
-// 	char	**paths;
-// 	char	**path_double;
+void	expand_command(t_cmd *command)
+{
+	char	**paths;
+	char	**path_double;
 
-// 	paths = ft_split(getenv("PATH"), ':');
-// 	define_path(command, paths);
-// 	path_double = paths;
-// 	while (*paths)
-// 	{
-// 		free(*paths);
-// 		paths++;
-// 	}
-// 	free(path_double);
-// 	return ;
-// }
+	if (command->type != e_simple_command || command->cmd == NULL)
+		return ;
+	if (command->cmd[0] == '/' || (command->cmd[0] != '\0' && command->cmd[1] != '\0'
+		&& command->cmd[0] == '.' && command->cmd[1] == '/'))
+		return ;
+	paths = ft_split(getenv("PATH"), ':');
+	define_path(command, paths);
+	path_double = paths;
+	while (*paths)
+	{
+		free(*paths);
+		paths++;
+	}
+	free(path_double);
+	return ;
+}
 
 void	execute_command_list(t_cmd *commands)
 {
@@ -381,29 +574,29 @@ void	execute_command_list(t_cmd *commands)
 	return ;
 }
 
-void	print_args(char **args)
-{
-	int	count;
+// void	print_args(char **args)
+// {
+// 	int	count;
 
-	count = 0;
-	while (args[count])
-	{
-		printf("%s\n", args[count]);
-		count++;
-	}
-	if (args[count] == NULL)
-		printf("ok\n");
-}
+// 	count = 0;
+// 	while (args[count])
+// 	{
+// 		printf("%s\n", args[count]);
+// 		count++;
+// 	}
+// 	if (args[count] == NULL)
+// 		printf("ok\n");
+// }
 
-void	print_commands(t_cmd *list)
-{
-	while (list)
-	{
-		printf("%s\n", list->cmd);
-		print_args(list->args);
-		list = list->next;
-	}
-}
+// void	print_commands(t_cmd *list)
+// {
+// 	while (list)
+// 	{
+// 		printf("%s\n", list->cmd);
+// 		print_args(list->args);
+// 		list = list->next;
+// 	}
+// }
 
 char	*output_prompt()
 {
