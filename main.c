@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/21 06:01:23 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/25 01:00:48 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,10 +49,10 @@ void	handle_signals(int signo)
 
 //placeholder
 //to write actual version later
-void	free_everything()
+void	free_everything(void)
 {
 	t_cmd	*dbl_commands;
-	t_cmd	*dbl_dbl_commands; //really stupid name
+	t_cmd	*dbl_dbl_commands;
 	int		count;
 	t_red	*all_reds;
 	t_red	*all_reds_dbl;
@@ -86,15 +86,14 @@ void	free_everything()
 		free(dbl_commands);
 		dbl_commands = dbl_dbl_commands;
 	}
-
 }
 
-int		cmd_len(t_cmd *commands)
+int	cmd_len(t_cmd *commands)
 {
 	int	ret;
 
 	ret = 0;
-	while(commands)
+	while (commands)
 	{
 		ret++;
 		commands = commands->next;
@@ -121,12 +120,12 @@ void	commute_pipes(int len, t_pipe *pipes, int pipe_pos)
 	}
 }
 
-int	built_in_exit()
+int	built_in_exit(void)
 {
 	exit(0);
 }
 
-int	built_in_env()
+int	built_in_env(void)
 {
 	int	count;
 
@@ -196,7 +195,7 @@ char	*my_special_getenv(char **env, char *key)
 
 int	unset_one(char ***prev_env, char *env_var)
 {
-	int	count;
+	int		count;
 	char	**new_env;
 	char	*to_unset;
 	int		sec_count;
@@ -249,7 +248,7 @@ int	built_in_unset(char ***prev_env, t_cmd *command)
 	return (0);
 }
 
-int	built_in_pwd()
+int	built_in_pwd(void)
 {
 	char	*cwd;
 
@@ -385,21 +384,21 @@ int	built_in_cd(t_cmd *command)
 int	real_execution(t_cmd *command)
 {
 	if (command->type == e_simple_command)
-		return(execve(command->cmd, command->args, minishell.env));
+		return (execve(command->cmd, command->args, minishell.env));
 	else if (command->type == e_echo)
-		return(built_in_echo(command));
+		return (built_in_echo(command));
 	else if (command->type == e_cd)
-		return(built_in_cd(command));
+		return (built_in_cd(command));
 	else if (command->type == e_pwd)
-		return(built_in_pwd());
+		return (built_in_pwd());
 	else if (command->type == e_unset)
-		return(built_in_unset(&minishell.env, command));
+		return (built_in_unset(&minishell.env, command));
 	else if (command->type == e_export)
-		return(built_in_export(&minishell.env, command));
+		return (built_in_export(&minishell.env, command));
 	else if (command->type == e_env)
-		return(built_in_env());
+		return (built_in_env());
 	else if (command->type == e_exit)
-		return(built_in_exit());
+		return (built_in_exit());
 	else
 		return (-1);
 }
@@ -468,14 +467,15 @@ void	fork_and_dup(int cmd_list_len)
 	t_pipe	*pipes_list;
 	t_pipe	trivial_pipe;
 	t_cmd	*command;
-	int	count;
-	int	status;
-	int	pid;
+	int		count;
+	int		status;
+	int		pid;
 
 	count = 0;
 	if (cmd_list_len == 1)
 	{
-		if (minishell.commands->type != e_simple_command && minishell.commands->type != e_echo)
+		if (minishell.commands->type != e_simple_command
+			&& minishell.commands->type != e_echo)
 		{
 			real_execution(minishell.commands);
 			return ;
@@ -548,8 +548,9 @@ void	expand_command(t_cmd *command)
 
 	if (command->type != e_simple_command || command->cmd == NULL)
 		return ;
-	if (command->cmd[0] == '/' || (command->cmd[0] != '\0' && command->cmd[1] != '\0'
-		&& command->cmd[0] == '.' && command->cmd[1] == '/'))
+	if (command->cmd[0] == '/' || (command->cmd[0] != '\0'
+			&& command->cmd[1] != '\0'
+			&& command->cmd[0] == '.' && command->cmd[1] == '/'))
 		return ;
 	paths = ft_split(getenv("PATH"), ':');
 	define_path(command, paths);
@@ -598,11 +599,11 @@ void	execute_command_list(t_cmd *commands)
 // 	}
 // }
 
-char	*output_prompt()
+char	*output_prompt(void)
 {
 	static char	*prompt = NULL;
-	char	*tmp;
-	char	*sec_tmp;
+	char		*tmp;
+	char		*sec_tmp;
 
 	if (prompt != NULL)
 		free(prompt);
@@ -640,10 +641,8 @@ void	set_labels(t_cmd *commands)
 	}
 }
 
-void	manage_command()
+void	manage_command(void)
 {
-	// char *name = ttyname(1);
-
 	minishell.command_line = readline(output_prompt()); //USER should be in global context
 	add_history(minishell.command_line);
 	minishell.commands = string_run(minishell.command_line, minishell.env);
