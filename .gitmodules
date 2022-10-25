@@ -1,3 +1,3 @@
 [submodule "lexer"]
 	path = lexer
-	url = https://github.com/chjuge/lexer_parser
+	url = https://github.com/chjuge/lexer_parser.git
