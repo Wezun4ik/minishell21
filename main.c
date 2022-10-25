@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/25 01:00:48 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/25 15:39:08 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,16 @@ void	handle_signals(int signo)
 	rl_redisplay();
 }
 
+void	unlink_heredocs(t_cmd *commands)
+{
+	while (commands)
+	{
+		if (commands->heredoc)
+			unlink(commands->heredoc);
+		commands = commands->next;
+	}
+}
+
 //placeholder
 //to write actual version later
 void	free_everything(void)
@@ -59,6 +69,7 @@ void	free_everything(void)
 
 	free(minishell.command_line);
 	minishell.command_line = NULL;
+	unlink_heredocs(minishell.commands);
 	dbl_commands = minishell.commands;
 	while (dbl_commands)
 	{
@@ -276,7 +287,7 @@ int	valid_key_value(char *arg)
 	if (num_of_equals != 1)
 		return (0);
 	count = 0;
-	while (arg[count])
+	while (arg[count] && arg[count] != '=')
 	{
 		if (!(ft_isalnum(arg[count])) && arg[count] != '_' && arg[count] != '=')
 			return (0);
@@ -381,26 +392,92 @@ int	built_in_cd(t_cmd *command)
 	return (0);
 }
 
+int	open_files(t_cmd *command)
+{
+	t_red	*cur_red;
+
+	command->input = 0;
+	command->output = 1;
+	cur_red = command->red;
+	while (cur_red)
+	{
+		if (cur_red->type == REDGINT || cur_red->type == REDGGINT)
+		{
+			if (command->output != 1)
+				close(command->output);
+			if (cur_red->type == REDGINT)
+				command->output = open(cur_red->word, O_WRONLY | O_TRUNC | O_CREAT,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+			else
+				command->output = open(cur_red->word, O_WRONLY | O_APPEND | O_CREAT,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
+			if (command->output == -1)
+			{
+				perror(cur_red->word);
+				command->output = 1;
+				return (1);
+			}
+		}
+		if (cur_red->type == REDLINT || cur_red->type == REDLLINT)
+		{
+			if (command->input != 0)
+				close(command->output);
+			if (cur_red->type == REDLLINT)
+				command->input = open(command->heredoc, O_RDONLY);
+			else
+				command->input = open(cur_red->word, O_RDONLY);
+			if (command->input == -1)
+			{
+				perror(cur_red->word);
+				command->input = 1;
+				return (1);
+			}
+		}
+		cur_red = cur_red->next;
+	}
+	return (0);
+}
+
+void	close_files(t_cmd *command)
+{
+	if (command->input != 0)
+		close(command->input);
+	if (command->output != 1)
+		close(command->output);
+}
+
 int	real_execution(t_cmd *command)
 {
-	if (command->type == e_simple_command)
-		return (execve(command->cmd, command->args, minishell.env));
-	else if (command->type == e_echo)
-		return (built_in_echo(command));
-	else if (command->type == e_cd)
-		return (built_in_cd(command));
-	else if (command->type == e_pwd)
-		return (built_in_pwd());
-	else if (command->type == e_unset)
-		return (built_in_unset(&minishell.env, command));
-	else if (command->type == e_export)
-		return (built_in_export(&minishell.env, command));
-	else if (command->type == e_env)
-		return (built_in_env());
-	else if (command->type == e_exit)
-		return (built_in_exit());
-	else
-		return (-1);
+	int	ret;
+
+	ret = open_files(command);
+	if (!ret)
+	{
+		if (command->type == e_simple_command)
+		{
+			dup2(command->input, 0);
+			dup2(command->output, 1);
+			ret = (execve(command->cmd, command->args, minishell.env));
+		}
+		else if (command->type == e_echo)
+			ret = (built_in_echo(command));
+		else if (command->type == e_cd)
+			ret = (built_in_cd(command));
+		else if (command->type == e_pwd)
+			ret = (built_in_pwd());
+		else if (command->type == e_unset)
+			ret = (built_in_unset(&minishell.env, command));
+		else if (command->type == e_export)
+			ret = (built_in_export(&minishell.env, command));
+		else if (command->type == e_env)
+			ret = (built_in_env());
+		else if (command->type == e_exit)
+			ret = (built_in_exit());
+		else
+			ret = (1);
+	}
+	close_files(command);
+	return (ret);
 }
 
 void	exec_pipe(int len, t_pipe *pipes, int pipe_pos, t_cmd *command)
@@ -477,6 +554,8 @@ void	fork_and_dup(int cmd_list_len)
 		if (minishell.commands->type != e_simple_command
 			&& minishell.commands->type != e_echo)
 		{
+			if (minishell.commands->type == e_exit)
+				unlink_heredocs(minishell.commands);
 			real_execution(minishell.commands);
 			return ;
 		}
@@ -641,13 +720,71 @@ void	set_labels(t_cmd *commands)
 	}
 }
 
+int		read_heredocs(t_cmd *commands)
+{
+	static int	file_counter = 0;
+	t_red		*reds;
+	char		*str_misc;
+	int			fd;
+
+	while (commands)
+	{
+		commands->heredoc = NULL;
+		reds = commands->red;
+		while (reds)
+		{
+			if (reds->type == REDLLINT)
+			{
+				if (commands->heredoc)
+				{
+					unlink(commands->heredoc);
+					free(commands->heredoc);
+					commands->heredoc = NULL;
+				}
+				str_misc = ft_itoa(file_counter);
+				commands->heredoc = ft_strjoin("/tmp/minishell_tmp-", str_misc);
+				free(str_misc);
+				fd = open(commands->heredoc, O_WRONLY | O_CREAT);
+				if (fd == -1)
+				{
+					perror("heredoc");
+					return (0);
+				}
+				while (1)
+				{
+					// write(1, "\n", 1);
+					rl_on_new_line();
+					str_misc = readline(">");
+					if (str_misc == NULL)
+						return (0);
+					if (!ft_strncmp(str_misc, reds->word, ft_strlen(str_misc) + 1))
+						break ;
+					write(fd, str_misc, ft_strlen(str_misc));
+					free(str_misc);
+				}
+				close(fd);
+			}
+			reds = reds->next;
+		}
+		commands = commands->next;
+	}
+	return (1);
+}
+
 void	manage_command(void)
 {
+	rl_on_new_line();
 	minishell.command_line = readline(output_prompt()); //USER should be in global context
+	if (minishell.command_line == NULL)
+	{
+		printf("\n");
+		return ;
+	}
 	add_history(minishell.command_line);
 	minishell.commands = string_run(minishell.command_line, minishell.env);
 	set_labels(minishell.commands);
-	execute_command_list(minishell.commands);
+	if (read_heredocs(minishell.commands))
+		execute_command_list(minishell.commands);
 	free_everything();
 }
 
@@ -692,6 +829,8 @@ int	main(int argc, char **argv, char **environment)
 	(void)argv;
 	minishell.env = dup_env(environment);
 	signal(SIGINT, handle_signals);
+	signal(SIGQUIT, SIG_IGN);
+	rl_getc_function = getc;
 	while (1)
 		manage_command();
 	return (0);

@@ -6,7 +6,7 @@
 /*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 20:07:54 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/19 21:03:40 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/25 15:37:29 by ilya             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,7 @@
 # include <stdio.h>
 # include <sys/types.h>
 # include <sys/wait.h>
+# include <sys/stat.h>
 # include <string.h>
 # include <stdlib.h>
 # include <errno.h>
@@ -27,30 +28,16 @@
 # include <readline/readline.h>
 # include <readline/history.h>
 
-//*********resolve conflict, then delete**************
-/* структура из результатов парсинга. из них нужно будет сделать склейку с переменными окружения для запуска в execve() */
-// typedef struct		s_cmd
-// {
-// 	int				str_len;	//длина строки команды. пригодится, когда нужно будет перебирать с вариантами окружения
-// 	int				ind;		//индекс. пока не уверен, что понадобилтся, но проще его будет просто убрать
-// 	char			*str_cmd;	//сама команда, с относительным/абсолютным/кратким путем
-// 	char			**args;		//аргументы программы
-// 	int				out_file;	//дескриптор выходного файла
-// 	int				in_file;	//дескриптор входного файла
-// 	struct s_cmd	*next;
-// 	struct s_cmd	*prev;		//пока список двусвязный. снова же, можно будет просто удалить обратный ход
-// }					t_cmd;
-
-typedef struct		s_minishell
+typedef struct s_minishell
 {
-	char			*command_line;		//прочитанная строка
-	char			*pwd;				//директория
-	char			**env;				//переменные окружения
-	t_cmd			*commands;			//список команд
-	pid_t			*processes_pids;	//набор pid_t запущенных процессов; тип скорее всего изменится
+	char			*command_line;
+	char			*pwd;
+	char			**env;
+	t_cmd			*commands;
+	pid_t			*processes_pids;
 }					t_minishell;
 
-typedef int t_pipe[2];
+typedef int	t_pipe[2];
 
 void	expand_command(t_cmd *command);
 
