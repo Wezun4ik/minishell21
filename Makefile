@@ -6,7 +6,7 @@
 #    By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/28 18:42:35 by sbrella           #+#    #+#              #
-#    Updated: 2022/10/26 15:27:48 by mproveme         ###   ########.fr        #
+#    Updated: 2022/10/26 15:52:07 by mproveme         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -82,9 +82,15 @@ t_red.c
 LEXER_SRCS = $(addprefix ./lexer/, $(LEXER))
 
 SRCS =	main.c\
-		sort_env.c
+sort_env.c \
+builtins_1.c \
+builtins_2.c \
+builtins_3.c
 
-OUT = main.o
+OUT = main.o \
+builtins_1.o \
+builtins_2.o \
+builtins_3.o
 
 INCLUDES = ./minishell.h
 

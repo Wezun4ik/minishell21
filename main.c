@@ -6,37 +6,13 @@
 /*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 15:34:24 by mproveme         ###   ########.fr       */
+/*   Updated: 2022/10/26 15:51:14 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
 
 t_minishell	minishell = {NULL, NULL, NULL, NULL, NULL};
-
-char	*my_getenv(char **env, char *key)
-{
-	char	*key_copy;
-	char	*loc;
-	int		count;
-
-	key_copy = ft_strjoin(key, "=");
-	count = 0;
-	if (env == NULL || key == NULL)
-		return (NULL);
-	while (env[count])
-	{
-		loc = ft_strnstr(env[count], key_copy, ft_strlen(key_copy) + 1);
-		if (loc)
-		{
-			free(key_copy);
-			return (ft_strchr(env[count], '=') + 1);
-		}
-		count++;
-	}
-	free(key_copy);
-	return (NULL);
-}
 
 void	handle_signals(int signo)
 {
@@ -131,269 +107,6 @@ void	commute_pipes(int len, t_pipe *pipes, int pipe_pos)
 	}
 }
 
-int	built_in_exit(void)
-{
-	exit(0);
-}
-
-int	built_in_env(void)
-{
-	int	count;
-
-	count = 0;
-	while (minishell.env[count])
-	{
-		printf("%s\n", minishell.env[count]);
-		count++;
-	}
-	return (0);
-}
-
-int	built_in_echo(t_cmd *command)
-{
-	int		count;
-	int		new_line;
-
-	count = 1;
-	new_line = 1;
-	while (command->args[count])
-	{
-		if (count != 1 && !(count == 2 && new_line == 0))
-			printf(" ");
-		if (count == 1 && !ft_strncmp(command->args[count], "-n", 3))
-			new_line = 0;
-		else
-			printf("%s", command->args[count]);
-		count++;
-	}
-	if (new_line)
-		printf("\n");
-	return (0);
-}
-
-int	valid_arg(char *arg)
-{
-	while (*arg)
-	{
-		if (!ft_isalnum(*arg) && *arg != '_')
-			return (0);
-		arg++;
-	}
-	return (1);
-}
-
-char	*my_special_getenv(char **env, char *key)
-{
-	char	*key_copy;
-	char	*loc;
-	int		count;
-
-	key_copy = ft_strjoin(key, "=");
-	count = 0;
-	while (env[count])
-	{
-		loc = ft_strnstr(env[count], key_copy, ft_strlen(key_copy) + 1);
-		if (loc)
-		{
-			free(key_copy);
-			return (env[count]);
-		}
-		count++;
-	}
-	free(key_copy);
-	return (NULL);
-}
-
-int	unset_one(char ***prev_env, char *env_var)
-{
-	int		count;
-	char	**new_env;
-	char	*to_unset;
-	int		sec_count;
-
-	count = 0;
-	sec_count = 0;
-	to_unset = my_special_getenv(*prev_env, env_var);
-	while ((*prev_env)[count])
-		count++;
-	if (!to_unset || count == 0)
-		return (0);
-	new_env = malloc(sizeof(char *) * (count));
-	new_env[count - 1] = NULL;
-	if (!new_env)
-	{
-		perror("malloc unset_one");
-		exit (1);
-	}
-	count = 0;
-	while ((*prev_env)[count])
-	{
-		if ((*prev_env)[count] != to_unset)
-		{
-			new_env[sec_count] = (*prev_env)[count];
-			sec_count++;
-		}
-		else
-			free((*prev_env)[count]);
-		count++;
-	}
-	count = 0;
-	free(*prev_env);
-	*prev_env = new_env;
-	return (0);
-}
-
-int	built_in_unset(char ***prev_env, t_cmd *command)
-{
-	int	count;
-
-	count = 1;
-	while (command->args[count])
-	{
-		if (valid_arg(command->args[count]))
-			unset_one(prev_env, command->args[count]);
-		else
-			perror("unset");
-		count++;
-	}
-	return (0);
-}
-
-int	built_in_pwd(void)
-{
-	char	*cwd;
-
-	cwd = getcwd(NULL, 0);
-	if (cwd == NULL)
-		return (1);
-	printf("%s\n", cwd);
-	free(cwd);
-	return (0);
-}
-
-int	valid_key_value(char *arg)
-{
-	int	count;
-	int	num_of_equals;
-
-	count = 0;
-	num_of_equals = 0;
-	while (arg[count])
-	{
-		if (arg[count] == '=')
-			num_of_equals++;
-		count++;
-	}
-	if (num_of_equals != 1)
-		return (0);
-	count = 0;
-	while (arg[count] && arg[count] != '=')
-	{
-		if (!(ft_isalnum(arg[count])) && arg[count] != '_' && arg[count] != '=')
-			return (0);
-		count++;
-	}
-	return (1);
-}
-
-void	export_one(char ***prev_env, char *env_var)
-{
-	char	*key;
-	char	*pos;
-	int		count;
-	char	**new_env;
-	int		sec_count;
-
-	sec_count = 0;
-	key = ft_strdup(env_var);
-	pos = ft_strchr(key, '=');
-	*pos = '\0';
-	unset_one(prev_env, key);
-	*pos = '=';
-	count = 0;
-	while ((*prev_env)[count])
-		count++;
-	new_env = malloc(sizeof(char *) * (count + 2));
-	if (new_env == NULL)
-	{
-		perror("malloc");
-		exit (1);
-	}
-	new_env[count + 1] = NULL;
-	while (sec_count < count)
-	{
-		new_env[sec_count] = (*prev_env)[sec_count];
-		sec_count++;
-	}
-	new_env[count] = key;
-	free(*prev_env);
-	*prev_env = new_env;
-}
-
-int	built_in_export(char ***prev_env, t_cmd *command)
-{
-	int	count;
-
-	count = 1;
-	while (command->args[count])
-	{
-		if (valid_key_value(command->args[count]))
-			export_one(prev_env, command->args[count]);
-		else
-			perror("export");
-		count++;
-	}
-	if (--count == 0)
-	print_sorted_env(prev_env);
-	return (0);
-}
-
-int	built_in_cd(t_cmd *command)
-{
-	int		count;
-	char	*arg;
-	char	*dbl;
-
-	count = 1;
-	while (command->args[count])
-		count++;
-	if (count > 2)
-	{
-		perror("cd: invalid number of arguments");
-		return (1);
-	}
-	if (count == 1)
-	{
-		arg = my_getenv(minishell.env, "HOME");
-		if (!arg)
-		{
-			perror("cd: HOME is not set");
-			return (1);
-		}
-	}
-	else
-		arg = command->args[1];
-	if (chdir(arg))
-	{
-		perror("cd");
-		return (1);
-	}
-	unset_one(&minishell.env, "OLDPWD");
-	if (my_getenv(minishell.env, "PWD"))
-	{
-		arg = ft_strjoin("OLDPWD=", my_getenv(minishell.env, "PWD"));
-		export_one(&minishell.env, arg);
-		free(arg);
-	}
-	unset_one(&minishell.env, "PWD");
-	arg = getcwd(NULL, 0);
-	dbl = ft_strjoin("PWD=", arg);
-	free(arg);
-	export_one(&minishell.env, dbl);
-	free(dbl);
-	return (0);
-}
-
 int	open_files(t_cmd *command)
 {
 	t_red	*cur_red;
@@ -466,7 +179,7 @@ int	real_execution(t_cmd *command)
 		else if (command->type == e_cd)
 			ret = (built_in_cd(command));
 		else if (command->type == e_pwd)
-			ret = (built_in_pwd());
+			ret = (built_in_pwd(command));
 		else if (command->type == e_unset)
 			ret = (built_in_unset(&minishell.env, command));
 		else if (command->type == e_export)
@@ -656,30 +369,6 @@ void	execute_command_list(t_cmd *commands)
 	return ;
 }
 
-// void	print_args(char **args)
-// {
-// 	int	count;
-
-// 	count = 0;
-// 	while (args[count])
-// 	{
-// 		printf("%s\n", args[count]);
-// 		count++;
-// 	}
-// 	if (args[count] == NULL)
-// 		printf("ok\n");
-// }
-
-// void	print_commands(t_cmd *list)
-// {
-// 	while (list)
-// 	{
-// 		printf("%s\n", list->cmd);
-// 		print_args(list->args);
-// 		list = list->next;
-// 	}
-// }
-
 char	*output_prompt(void)
 {
 	static char	*prompt = NULL;
@@ -746,7 +435,8 @@ int		read_heredocs(t_cmd *commands)
 				str_misc = ft_itoa(file_counter);
 				commands->heredoc = ft_strjoin("/tmp/minishell_tmp-", str_misc);
 				free(str_misc);
-				fd = open(commands->heredoc, O_WRONLY | O_CREAT);
+				fd = open(commands->heredoc, O_WRONLY | O_CREAT,
+					S_IRUSR | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH);
 				if (fd == -1)
 				{
 					perror("heredoc");
@@ -760,7 +450,10 @@ int		read_heredocs(t_cmd *commands)
 					if (str_misc == NULL)
 						return (0);
 					if (!ft_strncmp(str_misc, reds->word, ft_strlen(str_misc) + 1))
+					{
+						free(str_misc);
 						break ;
+					}
 					write(fd, str_misc, ft_strlen(str_misc));
 					free(str_misc);
 				}
