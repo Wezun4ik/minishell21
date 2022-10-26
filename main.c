@@ -6,7 +6,7 @@
 /*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 15:51:14 by mproveme         ###   ########.fr       */
+/*   Updated: 2022/10/26 16:34:36 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ int	open_files(t_cmd *command)
 		if (cur_red->type == REDLINT || cur_red->type == REDLLINT)
 		{
 			if (command->input != 0)
-				close(command->output);
+				close(command->input);
 			if (cur_red->type == REDLLINT)
 				command->input = open(command->heredoc, O_RDONLY);
 			else
@@ -144,7 +144,7 @@ int	open_files(t_cmd *command)
 			if (command->input == -1)
 			{
 				perror(cur_red->word);
-				command->input = 1;
+				command->input = 0;
 				return (1);
 			}
 		}
@@ -455,6 +455,7 @@ int		read_heredocs(t_cmd *commands)
 						break ;
 					}
 					write(fd, str_misc, ft_strlen(str_misc));
+					write(fd, "\n", 1);
 					free(str_misc);
 				}
 				close(fd);

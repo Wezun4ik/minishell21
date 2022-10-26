@@ -3,3 +3,4 @@
 *.o
 minishell
 minishell.dSYM/
+libft/libft.a
