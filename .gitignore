@@ -2,3 +2,4 @@
 .vscode
 *.o
 minishell
+minishell.dSYM/

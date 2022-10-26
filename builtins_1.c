@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins_1.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 02:54:50 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 14:15:44 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/26 16:05:22 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ int	built_in_pwd(t_cmd *command)
 	if (cwd == NULL)
 		return (1);
 	write(command->output, cwd, ft_strlen(cwd));
+	write(command->output, "\n", 1);
 	free(cwd);
 	return (0);
 }
@@ -95,7 +96,7 @@ int	built_in_export(char ***prev_env, t_cmd *command)
 		if (valid_key_value(command->args[count]))
 			export_one(prev_env, command->args[count]);
 		else
-			perror("export");
+			write(2, "Invalid key=value", ft_strlen("Invalid key=value"));
 		count++;
 	}
 	return (0);
