@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+         #
+#    By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/28 18:42:35 by sbrella           #+#    #+#              #
-#    Updated: 2022/10/20 21:07:19 by ilya             ###   ########.fr        #
+#    Updated: 2022/10/26 15:27:48 by mproveme         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -81,7 +81,8 @@ t_red.c
 
 LEXER_SRCS = $(addprefix ./lexer/, $(LEXER))
 
-SRCS = main.c
+SRCS =	main.c\
+		sort_env.c
 
 OUT = main.o
 

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   main.c                                             :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/25 15:39:08 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/26 15:34:24 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -343,6 +343,8 @@ int	built_in_export(char ***prev_env, t_cmd *command)
 			perror("export");
 		count++;
 	}
+	if (--count == 0)
+	print_sorted_env(prev_env);
 	return (0);
 }
 
