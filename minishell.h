@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 20:07:54 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 14:16:01 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/26 17:05:49 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,5 +52,6 @@ int		valid_arg(char *arg);
 int		built_in_echo(t_cmd *command);
 char	*my_getenv(char **env, char *key);
 int		built_in_exit(void);
-int		built_in_env(void);
+int		built_in_env(char **env);
+char	**sort_env(char **arr);
 #endif

@@ -6,7 +6,7 @@
 /*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/07/07 19:59:48 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 16:34:36 by mproveme         ###   ########.fr       */
+/*   Updated: 2022/10/26 16:58:27 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ int	real_execution(t_cmd *command)
 		else if (command->type == e_export)
 			ret = (built_in_export(&minishell.env, command));
 		else if (command->type == e_env)
-			ret = (built_in_env());
+			ret = (built_in_env(minishell.env));
 		else if (command->type == e_exit)
 			ret = (built_in_exit());
 		else

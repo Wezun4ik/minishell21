@@ -6,7 +6,7 @@
 #    By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/28 18:42:35 by sbrella           #+#    #+#              #
-#    Updated: 2022/10/26 15:52:07 by mproveme         ###   ########.fr        #
+#    Updated: 2022/10/26 17:12:19 by mproveme         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -88,6 +88,7 @@ builtins_2.c \
 builtins_3.c
 
 OUT = main.o \
+sort_env.o \
 builtins_1.o \
 builtins_2.o \
 builtins_3.o
