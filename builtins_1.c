@@ -6,7 +6,7 @@
 /*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 02:54:50 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 16:05:22 by mproveme         ###   ########.fr       */
+/*   Updated: 2022/10/26 17:04:41 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ void	export_one(char ***prev_env, char *env_var)
 int	built_in_export(char ***prev_env, t_cmd *command)
 {
 	int	count;
+	char	**new_env;
 
 	count = 1;
 	while (command->args[count])
@@ -98,6 +99,12 @@ int	built_in_export(char ***prev_env, t_cmd *command)
 		else
 			write(2, "Invalid key=value", ft_strlen("Invalid key=value"));
 		count++;
+	}
+	if (count == 1)
+	{
+		new_env = sort_env(*prev_env);
+		built_in_env(new_env);
+		free_array(new_env);
 	}
 	return (0);
 }

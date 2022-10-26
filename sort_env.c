@@ -6,7 +6,7 @@
 /*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 13:54:54 by mproveme          #+#    #+#             */
-/*   Updated: 2022/10/26 15:33:40 by mproveme         ###   ########.fr       */
+/*   Updated: 2022/10/26 17:34:45 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ t_word	*fill_words(char **env)
 	{
 		tmp = init_word(env[i]);
 		add_back_word(&list, tmp);
+		i++;
 	}
 	return (list);
 }
@@ -39,7 +40,7 @@ t_word	*find_min(t_word *list)
 	min = prev;
 	while (curr)
 	{
-		if (ft_strncmp(curr->word, prev->word, ft_strlen(prev->word) + 1) < 0)
+		if (ft_strncmp(curr->word, min->word, ft_strlen(prev->word) + 1) < 0)
 			min = curr;
 		prev = curr;
 		curr = curr->next;
@@ -57,6 +58,7 @@ void	del_one_word(t_word **list, t_word *to_del)
 		curr = *list;
 		*list = (*list)->next;
 		free_word(curr);
+		return ;
 	}
 	prev = *list;
 	curr = (*list)->next;
@@ -94,6 +96,7 @@ char	**sort_env(char **arr)
 	list = fill_words(arr);
 	i = find_cnt_words(list);
 	new_arr = malloc(sizeof(char *) * (i + 1));
+	new_arr[i] = NULL;
 	i = 0;
 	while (list)
 	{
@@ -101,8 +104,6 @@ char	**sort_env(char **arr)
 		new_arr[i++] = ft_strdup(tmp->word);
 		del_one_word(&list, tmp);
 	}
-	new_arr[i] = NULL;
 	return (new_arr);
 }
 
-// void	print_sorted_env()

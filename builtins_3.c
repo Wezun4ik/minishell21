@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   builtins_3.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+        */
+/*   By: mproveme <mproveme@student.21-school.ru    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2022/10/26 03:11:06 by ilya              #+#    #+#             */
-/*   Updated: 2022/10/26 03:15:02 by ilya             ###   ########.fr       */
+/*   Updated: 2022/10/26 16:59:13 by mproveme         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,14 +43,14 @@ int	built_in_exit(void)
 	exit(0);
 }
 
-int	built_in_env(void)
+int	built_in_env(char **env)
 {
 	int	count;
 
 	count = 0;
-	while (minishell.env[count])
+	while (env[count])
 	{
-		printf("%s\n", minishell.env[count]);
+		printf("%s\n", env[count]);
 		count++;
 	}
 	return (0);
