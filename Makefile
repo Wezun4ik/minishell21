@@ -6,7 +6,7 @@
 #    By: ilya <ilya@student.42.fr>                  +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2018/11/28 18:42:35 by sbrella           #+#    #+#              #
-#    Updated: 2022/10/20 21:07:19 by ilya             ###   ########.fr        #
+#    Updated: 2022/10/26 03:16:15 by ilya             ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -81,9 +81,15 @@ t_red.c
 
 LEXER_SRCS = $(addprefix ./lexer/, $(LEXER))
 
-SRCS = main.c
+SRCS = main.c \
+builtins_1.c \
+builtins_2.c \
+builtins_3.c
 
-OUT = main.o
+OUT = main.o \
+builtins_1.o \
+builtins_2.o \
+builtins_3.o
 
 INCLUDES = ./minishell.h
 
